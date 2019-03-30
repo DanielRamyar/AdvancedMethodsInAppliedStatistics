@@ -17,12 +17,17 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,
 
 nr_unique_digits = len(np.unique(y_train))
 
-kmeans = KMeans(n_clusters=nr_unique_digits, random_state=0).fit(X_train)
+kmeans = KMeans(n_clusters=50, random_state=0).fit(X_train)
 predict_kmeans = kmeans.predict(X_test)
-print(predict_kmeans)
 
-# plt.imshow(X_train[3, :].reshape((28, 28)))
-# plt.figure()
-# plt.imshow((X_train[9, :].reshape((28, 28))))
-# plt.show()
+print(kmeans.labels_[0:20])
+# for i in range(10):
+    # plt.figure()
+    # plt.imshow(X_train[i, :].reshape((28, 28)))
+    
+plt.figure()
+plt.imshow(X_train[5, :].reshape((28, 28)))
+plt.figure()
+plt.imshow(X_train[14, :].reshape((28, 28)))
+plt.show()
 
