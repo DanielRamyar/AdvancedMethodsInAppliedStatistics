@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
-from sklearn.model_selection import train_test_split
 
 
 def display_digit(data, index=None):
@@ -11,9 +9,9 @@ def display_digit(data, index=None):
     a single line a data.
     '''
     if index is not None:
-        plt.imshow(data[index, 1::].reshape((28, 28)))
+        plt.imshow(data[index, 2::].reshape((28, 28)))
     else:
-        plt.imshow(data[1::].reshape((28, 28)))
+        plt.imshow(data[2::].reshape((28, 28)))
 
 
 def init_centroids(data, n):
@@ -26,28 +24,110 @@ def init_centroids(data, n):
 
 
 def dist_centroids(data, cent):
-
-    A = []
+    '''
+    Returns the distance between each point (each row in data) and centroids
+    '''
+    dist = []
     for i in range(cent.shape[0]):
-        temp = data[:, 1::] - cent[i, 1::]
-        temp2 = np.square(temp)
-        temp3 = np.sum(temp2, axis=1)
-        temp4 = np.sqrt(temp3)
-        A = np.append(A, temp4)
+        temp = np.linalg.norm(data[:, 2::] - cent[i, 2::], axis=1)
+        dist = np.append(dist, temp)
 
-    A = A.reshape((cent.shape[0], data.shape[0])).T
-    return A
+    dist = dist.reshape((cent.shape[0], data.shape[0])).T
+    return dist
+
+
+def label_centroids(data, dist):
+    '''
+    Adds Label to data according to its closest centroid
+    '''
+    new_data = np.copy(data)
+    temp = np.argmin(dist, axis=1) + 1
+    new_data[:, 0] = temp
+    return new_data
+
+
+def new_centroids(data, cent):
+    '''
+    Calculates the new centroids from data with same label
+    '''
+    new_cent = np.copy(cent)
+    for i in range(cent.shape[0]):
+        new = np.average(data[data[:, 0] == i + 1][:, 2::], axis=0)
+        new_cent[i, 2::] = new
+
+    return new_cent
+
+
+def label_clusters(data, cent, n):
+
+    for i in range(n):
+        temp = data[data[:, 0] == i + 1]
+        temp1 = temp[:, 1].astype(int)
+        label = np.bincount(temp1).argmax()
+        cent[i, 0] = label
+
+    return cent
+
+
+def K_means(data, n):
+    '''
+    Does k-means analysis
+    '''
+    previous_difference = 0
+    centroids = init_centroids(data, n)
+
+    while True:
+        print(1)
+        distance_from_centroids = dist_centroids(data, centroids)
+        data = label_centroids(data, distance_from_centroids)
+        centroids_new = new_centroids(data, centroids)
+
+        difference = centroids[:, 2::] - centroids_new[:, 2::]
+        norm_difference = np.linalg.norm(difference, axis=1)
+
+        largest_norm_difference = max(norm_difference)
+        difference_change = abs(largest_norm_difference - previous_difference)
+        previous_difference = largest_norm_difference
+        centroids = centroids_new
+        print(difference_change)
+        if difference_change < 0.000001:
+            break
+        elif np.isnan(difference_change):
+            break
+
+    centroids = label_clusters(data, centroids, n)
+    return data, centroids
 
 
 # Read file
-file_path = 'digit-recognizer/train.csv'
-data = pd.read_csv(file_path, nrows=100)
-test = data.values
+# file_path = 'digit-recognizer/train.csv'
+# data = pd.read_csv(file_path, nrows=100)
+# test = data.values
+# test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
 
-print(data.iloc[0].values[1::].shape)
-print(test[0, 1::].shape)
-initc = init_centroids(test, 2)
-print(dist_centroids(test, initc).shape)
+A = np.random.normal(1, 0.5, (10, 2))
+A = np.insert(A, 0, np.zeros(A.shape[0]) + 1, axis=1)
+B = np.random.normal(2, 0.2, (10, 2))
+B = np.insert(B, 0, np.zeros(B.shape[0]) + 2, axis=1)
+C = np.random.normal(1.5, 0.1, (10, 2))
+C = np.insert(C, 0, np.zeros(B.shape[0]) + 15, axis=1)
+test = np.vstack((A, B))
+test = np.vstack((test, C))
+test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
+
+# print(test)
+test, cent = K_means(test, 5)
+print(cent)
+plt.scatter(test[:, 2], test[:, 3], c=test[:, 0])
+plt.scatter(cent[0, 2], cent[0, 3], marker='x', label=str(cent[0,0]))
+plt.scatter(cent[1, 2], cent[1, 3], marker='x', label=str(cent[1,0]))
+plt.scatter(cent[2, 2], cent[2, 3], marker='x', label=str(cent[2,0]))
+plt.scatter(cent[3, 2], cent[3, 3], marker='x', label=str(cent[3,0]))
+plt.scatter(cent[4, 2], cent[4, 3], marker='x', label=str(cent[4,0]))
+plt.legend()
+plt.show()
+
+
 
 # display_digit(data.iloc[0].values)
 # plt.figure()
