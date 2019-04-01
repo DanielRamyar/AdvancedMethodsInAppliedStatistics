@@ -59,7 +59,9 @@ def new_centroids(data, cent):
 
 
 def label_clusters(data, cent, n):
-
+    '''
+    Finds most common label in cluster and sets cluster label
+    '''
     for i in range(n):
         temp = data[data[:, 0] == i + 1]
         temp1 = temp[:, 1].astype(int)
@@ -67,6 +69,31 @@ def label_clusters(data, cent, n):
         cent[i, 0] = label
 
     return cent
+
+
+def classify(to_be_classified, cent):
+
+    dist = []
+    for i in range(cent.shape[0]):
+        temp = np.linalg.norm(to_be_classified[:, 2::] - cent[i, 2::], axis=1)
+        dist = np.append(dist, temp)
+    dist = dist.reshape((cent.shape[0], to_be_classified.shape[0])).T
+    temp = np.argmin(dist, axis=1) 
+
+    to_be_classified[:, 0] = cent[temp, 0]
+
+    return to_be_classified
+
+
+def get_accuracy(x, y):
+
+    correct_classified = 0
+    for i in range(len(x)):
+        if x[i] == y[i]:
+            correct_classified += 1
+    accuracy = correct_classified / len(x)
+
+    return accuracy
 
 
 def K_means(data, n):
@@ -100,32 +127,40 @@ def K_means(data, n):
 
 
 # Read file
-# file_path = 'digit-recognizer/train.csv'
-# data = pd.read_csv(file_path, nrows=100)
-# test = data.values
-# test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
-
-A = np.random.normal(1, 0.5, (10, 2))
-A = np.insert(A, 0, np.zeros(A.shape[0]) + 1, axis=1)
-B = np.random.normal(2, 0.2, (10, 2))
-B = np.insert(B, 0, np.zeros(B.shape[0]) + 2, axis=1)
-C = np.random.normal(1.5, 0.1, (10, 2))
-C = np.insert(C, 0, np.zeros(B.shape[0]) + 15, axis=1)
-test = np.vstack((A, B))
-test = np.vstack((test, C))
+file_path = 'digit-recognizer/train.csv'
+data = pd.read_csv(file_path)
+test = data.values
 test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
+train = test[:40000, :]
+to_test = test[40000:, :]
+
+# A = np.random.normal(1, 0.5, (10, 2))
+# A = np.insert(A, 0, np.zeros(A.shape[0]) + 1, axis=1)
+# B = np.random.normal(2, 0.2, (10, 2))
+# B = np.insert(B, 0, np.zeros(B.shape[0]) + 2, axis=1)
+# C = np.random.normal(1.5, 0.1, (10, 2))
+# C = np.insert(C, 0, np.zeros(B.shape[0]) + 15, axis=1)
+# test = np.vstack((A, B))
+# test = np.vstack((test, C))
+# test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
+# my_point = np.array([[-1, -1, 1, 2], [-1, -1, 1, 1], [-1, -1, 2, 2]])
 
 # print(test)
-test, cent = K_means(test, 5)
+
+test, cent = K_means(train, 15)
 print(cent)
-plt.scatter(test[:, 2], test[:, 3], c=test[:, 0])
-plt.scatter(cent[0, 2], cent[0, 3], marker='x', label=str(cent[0,0]))
-plt.scatter(cent[1, 2], cent[1, 3], marker='x', label=str(cent[1,0]))
-plt.scatter(cent[2, 2], cent[2, 3], marker='x', label=str(cent[2,0]))
-plt.scatter(cent[3, 2], cent[3, 3], marker='x', label=str(cent[3,0]))
-plt.scatter(cent[4, 2], cent[4, 3], marker='x', label=str(cent[4,0]))
-plt.legend()
-plt.show()
+classified = classify(to_test, cent)
+print(get_accuracy(classified[:, 0], classified[:, 1]))
+
+# plt.scatter(test[:, 2], test[:, 3], c=test[:, 0])
+# plt.scatter(my_point[:, 2], my_point[:, 3], marker='d', s=100, label='my point')
+# plt.scatter(cent[0, 2], cent[0, 3], marker='x', label=str(cent[0,0]))
+# plt.scatter(cent[1, 2], cent[1, 3], marker='x', label=str(cent[1,0]))
+# plt.scatter(cent[2, 2], cent[2, 3], marker='x', label=str(cent[2,0]))
+# plt.scatter(cent[3, 2], cent[3, 3], marker='x', label=str(cent[3,0]))
+# plt.scatter(cent[4, 2], cent[4, 3], marker='x', label=str(cent[4,0]))
+# plt.legend()
+# plt.show()
 
 
 

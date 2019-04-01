@@ -22,3 +22,6 @@ new = np.average(A[A[:, 0] == 3][:, 1::], axis=0)
 print(new)
 init_cent[0, 1::] = new
 print(init_cent)
+
+
+print(init_cent[:, 1])
