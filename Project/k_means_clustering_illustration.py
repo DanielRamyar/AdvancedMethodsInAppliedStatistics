@@ -105,23 +105,22 @@ def label_clusters(data, cent, n):
         temp1 = temp[:, 1].astype(int)
         label = np.bincount(temp1).argmax()
         cent[i, 0] = label
+
     return cent
 
 
 def classify(to_be_classified, cent):
 
     dist = []
-    classified = np.copy(to_be_classified)
-    print(cent)
     for i in range(cent.shape[0]):
         temp = np.linalg.norm(to_be_classified[:, 2::] - cent[i, 2::], axis=1)
         dist = np.append(dist, temp)
     dist = dist.reshape((cent.shape[0], to_be_classified.shape[0])).T
     temp = np.argmin(dist, axis=1)
 
-    classified[:, 0] = cent[temp, 0]
+    to_be_classified[:, 0] = cent[temp, 0]
 
-    return classified
+    return to_be_classified
 
 
 def get_accuracy(x, y):
@@ -141,25 +140,38 @@ def K_means(data, n):
     '''
     previous_difference = 0
     centroids = init_centroids(data, n)
-
-    for _ in range(20):
+    c = 221
+    while True:
         print(1)
+        print(centroids.shape)
+        if c < 225:
+            plt.subplot(c)
+            plt.scatter(data[data[:, 0] == 0][:, 2], data[data[:, 0] == 0][:, 3], c='purple', s=10)
+            plt.scatter(data[data[:, 0] == 1][:, 2], data[data[:, 0] == 1][:, 3], c='red', s=10)
+            plt.scatter(data[data[:, 0] == 2][:, 2], data[data[:, 0] == 2][:, 3], c='green', s=10)
+            plt.scatter(data[data[:, 0] == 3][:, 2], data[data[:, 0] == 3][:, 3], c='blue', s=10)
+
+            plt.scatter(centroids[0, 2], centroids[0, 3], marker='d', s=100, c='red', edgecolors='black')
+            plt.scatter(centroids[1, 2], centroids[1, 3], marker='d', s=100, c='green', edgecolors='black')
+            plt.scatter(centroids[2, 2], centroids[2, 3], marker='d', s=100, c='blue', edgecolors='black')
+
         distance_from_centroids = dist_centroids(data, centroids)
         data = label_centroids(data, distance_from_centroids)
         centroids_new = new_centroids(data, centroids)
 
         difference = centroids[:, 2::] - centroids_new[:, 2::]
         norm_difference = np.linalg.norm(difference, axis=1)
-        largest_norm_difference = max(norm_difference)
-        difference_change = abs((largest_norm_difference - previous_difference) /
-            np.mean([largest_norm_difference, previous_difference])) *100
-        previous_difference = largest_norm_difference
 
+        largest_norm_difference = max(norm_difference)
+
+        difference_change = abs((largest_norm_difference - previous_difference) /
+            np.mean([largest_norm_difference, previous_difference])) * 100
+        previous_difference = largest_norm_difference
         centroids = np.copy(centroids_new)
         print(difference_change)
-        
-
-
+        if np.isnan(difference_change):
+            break
+        c += 1
 
     centroids = label_clusters(data, centroids, n)
 
@@ -167,39 +179,107 @@ def K_means(data, n):
 
 
 # Read file
+# file_path = 'digit-recognizer/train.csv'
 
-np.random.seed(2)
-X_train, y_train_labels = loadlocal_mnist(
-                    images_path='digit-recognizer/train-images-idx3-ubyte',
-                    labels_path='digit-recognizer/train-labels-idx1-ubyte')
+# X_train, y_train_labels = loadlocal_mnist(
+#                     images_path='digit-recognizer/train-images-idx3-ubyte',
+#                     labels_path='digit-recognizer/train-labels-idx1-ubyte')
 
-X_test, y_test_labels = loadlocal_mnist(
-                images_path='digit-recognizer/t10k-images-idx3-ubyte',
-                labels_path='digit-recognizer/t10k-labels-idx1-ubyte')
+# X_test, y_test_labels = loadlocal_mnist(
+#                 images_path='digit-recognizer/t10k-images-idx3-ubyte',
+#                 labels_path='digit-recognizer/t10k-labels-idx1-ubyte')
 
-train = np.insert(X_train, 0, y_train_labels, axis=1)
-train = np.insert(train, 0, np.zeros(train.shape[0]), axis=1)
-train = train[:4000, :]
+# train = np.insert(X_train, 0, y_train_labels, axis=1)
+# train = np.insert(train, 0, np.zeros(train.shape[0]), axis=1)
+# train = train[:1000, :]
 
-test = np.insert(X_test, 0, y_test_labels, axis=1)
+# test = np.insert(X_test, 0, y_test_labels, axis=1)
+# test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
+# test = test[:100, :]
+
+# print(train)
+# train, cent = K_means(train, 10)
+# print(train)
+# print(get_accuracy(train[:, 0], train[:, 1]))
+# data = pd.read_csv(file_path)
+# test = data.values
+# test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
+# train = test[:40000, :]
+# to_test = test[40000:, :]
+np.random.seed(6)
+A = np.random.normal(1, 0.1, (100, 2))
+A = np.insert(A, 0, np.zeros(A.shape[0]) + 1, axis=1)
+
+
+
+B = np.random.normal(2, 0.3, (100, 1))
+print(B.shape)
+temp = np.random.normal(1, 0.1, 100)
+
+B = np.insert(B, 0, temp, axis=1)
+print(B.shape)
+B = np.insert(B, 0, np.zeros(B.shape[0]) + 2, axis=1)
+print(B.shape)
+
+
+
+C = np.random.normal(1.5, 0.1, (100, 2))
+C = np.insert(C, 0, np.zeros(B.shape[0]) + 15, axis=1)
+
+
+
+test = np.vstack((A, B))
+test = np.vstack((test, C))
 test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
-test = test[:100, :]
 
 
-train, cent = K_means(train, 10)
+my_point = np.array([[-1, -1, 1, 2], [-1, -1, 1, 1], [-1, -1, 2, 2]])
 
+# print(test)
 
-start = time.time()
+test, cent = K_means(test, 3)
 print(test)
-classified = classify(test, cent)
-print(classified)
-end = time.time()
+print(cent)
+# print(cent)
+# start = time.time()
+# classified = classify(my_point, cent)
+# end = time.time()
+# print(end - start)
+# print(get_accuracy(classified[:, 0], classified[:, 1]))
 
-
-accuracy = get_accuracy(classified[:, 0], classified[:, 1])
-print('Your accuracy is: ', accuracy)
-print('Your error rate is: ', 1 - accuracy)
-print('Time to classify: ', end - start)
-
-display_digit(classified, 1)
+# plt.scatter(test[:, 2], test[:, 3], c=test[:, 0])
+# plt.scatter(my_point[:, 2], my_point[:, 3], marker='d', s=100, label='my point')
+# plt.scatter(cent[0, 2], cent[0, 3], marker='x', label=str(cent[0,0]))
+# plt.scatter(cent[1, 2], cent[1, 3], marker='x', label=str(cent[1,0]))
+# plt.scatter(cent[2, 2], cent[2, 3], marker='x', label=str(cent[2,0]))
+# plt.scatter(cent[3, 2], cent[3, 3], marker='x', label=str(cent[3,0]))
+# plt.scatter(cent[4, 2], cent[4, 3], marker='x', label=str(cent[4,0]))
+# plt.legend()
 plt.show()
+
+
+
+# display_digit(data.iloc[0].values)
+# plt.figure()
+# display_digit(test, 0)
+# plt.show()
+
+
+# X = data.iloc[:, 1:].values
+# y = data.iloc[:, 0].values
+
+# X_train, X_test, y_train, y_test = train_test_split(X, y,
+#                                                     test_size=0.2,
+#                                                     random_state=42)
+
+# nr_unique_digits = len(np.unique(y_train))
+
+# kmeans = KMeans(n_clusters=50, random_state=0).fit(X_train)
+# predict_kmeans = kmeans.predict(X_test)
+
+# print(kmeans.labels_[0:20])
+# for i in range(10):
+#     plt.figure()
+#     plt.imshow(X_train[i, :].reshape((28, 28)))
+
+

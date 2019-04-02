@@ -1,3 +1,0 @@
-Error Rate: 3.59%
-Accuracy: 96.41%
-XGB Time for depth 2: 1210.1810297966003 seconds
