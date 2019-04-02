@@ -25,3 +25,6 @@ print(init_cent)
 
 
 print(init_cent[:, 1])
+
+if [1]:
+    print('hello')

@@ -1,6 +1,42 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import struct
+import time
+
+
+# I stole this function from the interwebz
+def loadlocal_mnist(images_path, labels_path):
+    """ Read MNIST from ubyte files.
+    Parameters
+    ----------
+    images_path : str
+        path to the test or train MNIST ubyte file
+    labels_path : str
+        path to the test or train MNIST class labels file
+    Returns
+    --------
+    images : [n_samples, n_pixels] numpy.array
+        Pixel values of the images.
+    labels : [n_samples] numpy array
+        Target class labels
+    Examples
+    -----------
+    For usage examples, please see
+    http://rasbt.github.io/mlxtend/user_guide/data/loadlocal_mnist/
+    """
+    with open(labels_path, 'rb') as lbpath:
+        magic, n = struct.unpack('>II',
+                                 lbpath.read(8))
+        labels = np.fromfile(lbpath,
+                             dtype=np.uint8)
+    with open(images_path, 'rb') as imgpath:
+        magic, num, rows, cols = struct.unpack(">IIII",
+                                               imgpath.read(16))
+        images = np.fromfile(imgpath,
+                             dtype=np.uint8).reshape(len(labels), 784)
+
+    return images, labels
 
 
 def display_digit(data, index=None):
@@ -64,6 +100,7 @@ def label_clusters(data, cent, n):
     '''
     for i in range(n):
         temp = data[data[:, 0] == i + 1]
+
         temp1 = temp[:, 1].astype(int)
         label = np.bincount(temp1).argmax()
         cent[i, 0] = label
@@ -78,7 +115,7 @@ def classify(to_be_classified, cent):
         temp = np.linalg.norm(to_be_classified[:, 2::] - cent[i, 2::], axis=1)
         dist = np.append(dist, temp)
     dist = dist.reshape((cent.shape[0], to_be_classified.shape[0])).T
-    temp = np.argmin(dist, axis=1) 
+    temp = np.argmin(dist, axis=1)
 
     to_be_classified[:, 0] = cent[temp, 0]
 
@@ -127,40 +164,60 @@ def K_means(data, n):
 
 
 # Read file
-file_path = 'digit-recognizer/train.csv'
-data = pd.read_csv(file_path)
-test = data.values
-test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
-train = test[:40000, :]
-to_test = test[40000:, :]
+# file_path = 'digit-recognizer/train.csv'
 
-# A = np.random.normal(1, 0.5, (10, 2))
-# A = np.insert(A, 0, np.zeros(A.shape[0]) + 1, axis=1)
-# B = np.random.normal(2, 0.2, (10, 2))
-# B = np.insert(B, 0, np.zeros(B.shape[0]) + 2, axis=1)
-# C = np.random.normal(1.5, 0.1, (10, 2))
-# C = np.insert(C, 0, np.zeros(B.shape[0]) + 15, axis=1)
-# test = np.vstack((A, B))
-# test = np.vstack((test, C))
+# X_train, y_train_labels = loadlocal_mnist(
+#                     images_path='digit-recognizer/train-images-idx3-ubyte',
+#                     labels_path='digit-recognizer/train-labels-idx1-ubyte')
+
+# X_test, y_test_labels = loadlocal_mnist(
+#                 images_path='digit-recognizer/t10k-images-idx3-ubyte',
+#                 labels_path='digit-recognizer/t10k-labels-idx1-ubyte')
+
+# train = np.insert(X_train, 0, y_train_labels, axis=1)
+# train = np.insert(train, 0, np.zeros(train.shape[0]), axis=1)
+# train = train[:500, :]
+
+# test = np.insert(X_test, 0, y_test_labels, axis=1)
 # test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
-# my_point = np.array([[-1, -1, 1, 2], [-1, -1, 1, 1], [-1, -1, 2, 2]])
+# test = test[:500, :]
+
+# data = pd.read_csv(file_path)
+# test = data.values
+# test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
+# train = test[:40000, :]
+# to_test = test[40000:, :]
+
+A = np.random.normal(1, 0.5, (100, 2))
+A = np.insert(A, 0, np.zeros(A.shape[0]) + 1, axis=1)
+B = np.random.normal(2, 0.2, (100, 2))
+B = np.insert(B, 0, np.zeros(B.shape[0]) + 2, axis=1)
+C = np.random.normal(1.5, 0.1, (100, 2))
+C = np.insert(C, 0, np.zeros(B.shape[0]) + 15, axis=1)
+test = np.vstack((A, B))
+test = np.vstack((test, C))
+test = np.insert(test, 0, np.zeros(test.shape[0]), axis=1)
+my_point = np.array([[-1, -1, 1, 2], [-1, -1, 1, 1], [-1, -1, 2, 2]])
 
 # print(test)
 
-test, cent = K_means(train, 15)
-print(cent)
-classified = classify(to_test, cent)
+test, cent = K_means(test, 3)
+# print(cent)
+# start = time.time()
+classified = classify(my_point, cent)
+# end = time.time()
+# print(end - start)
 print(get_accuracy(classified[:, 0], classified[:, 1]))
 
-# plt.scatter(test[:, 2], test[:, 3], c=test[:, 0])
-# plt.scatter(my_point[:, 2], my_point[:, 3], marker='d', s=100, label='my point')
-# plt.scatter(cent[0, 2], cent[0, 3], marker='x', label=str(cent[0,0]))
-# plt.scatter(cent[1, 2], cent[1, 3], marker='x', label=str(cent[1,0]))
-# plt.scatter(cent[2, 2], cent[2, 3], marker='x', label=str(cent[2,0]))
+plt.scatter(test[:, 2], test[:, 3], c=test[:, 0])
+plt.scatter(my_point[:, 2], my_point[:, 3], marker='d', s=100, label='my point')
+plt.scatter(cent[0, 2], cent[0, 3], marker='x', label=str(cent[0,0]))
+plt.scatter(cent[1, 2], cent[1, 3], marker='x', label=str(cent[1,0]))
+plt.scatter(cent[2, 2], cent[2, 3], marker='x', label=str(cent[2,0]))
 # plt.scatter(cent[3, 2], cent[3, 3], marker='x', label=str(cent[3,0]))
 # plt.scatter(cent[4, 2], cent[4, 3], marker='x', label=str(cent[4,0]))
-# plt.legend()
-# plt.show()
+plt.legend()
+plt.show()
 
 
 
