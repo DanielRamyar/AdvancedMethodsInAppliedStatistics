@@ -36,6 +36,7 @@ h_1 = []
 
 for i in range(data.shape[0]):
     z = data[i, :]
+    print(z.shape)
 
     result_1 = minimize(expected_pdf, [1, 1], args=(z), method='SLSQP',
                         bounds=((1, 1), (1e-10, None)))
