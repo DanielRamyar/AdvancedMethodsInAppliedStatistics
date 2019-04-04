@@ -75,6 +75,15 @@ def my_pdf3(VAR, x):
     result = np.sum(-ln_pdf)
     return result
 
+def my_pdf4(VAR, k):
+    p = VAR
+
+    pdf = binom.pmf(k, 5000, p)
+
+    ln_pdf = np.log((pdf))
+    result = np.sum(-ln_pdf)
+    return result
+
 
 fname = 'Exam_2019_Prob1.txt'
 data = np.loadtxt(fname)
@@ -102,10 +111,15 @@ data_1 = minimize(my_pdf1, [1, 1], args=(z1), method='SLSQP',
 data_2 = minimize(my_pdf2, [1, ], args=(z2), method='SLSQP',
                   bounds=(mu_bound, ))
 
+data_3 = minimize(my_pdf4, [0.001, ], args=(z2), method='SLSQP',
+                  bounds=((0, None), ))
+
 
 print(data_0)
 print(data_1)
 print(data_2)
+print('spe')
+print(data_3)
 
 
 ###############################################################################
@@ -125,7 +139,7 @@ my_chi = chisquare(observed_values,
 print(my_chi)
 print('Threshold value ', chi2.isf(0.05, len(expected_values)-2))
 
-
+print(len(expected_values)-2)
 plt.figure()
 plt.hist(z1, bins=n_bins, normed=True, label='Data Column 2')
 x = np.arange(-1, 1, 0.01)
@@ -143,23 +157,25 @@ n_bins = np.arange(min(z2), max(z2) + binwidth, binwidth)
 
 # Chi2 calculator
 observed_values, bins, _ = plt.hist(z2, bins=n_bins, label='Data Column 3')
-asdasd = np.arange(0, 21.1, 0.1)
+asdasd = np.arange(0, 22.1, 0.1)
 expected_values = poisson.pmf(asdasd, data_2.x[0]) * len(z2)
 plt.close()
-print(observed_values[observed_values != 0][:-1])
-print(expected_values[expected_values != 0][1:])
+print(observed_values[observed_values != 0])
+print(expected_values[expected_values != 0][:-1])
 
-my_chi = chisquare(observed_values[observed_values != 0][:-1],
+my_chi = chisquare(observed_values[observed_values != 0],
                    f_exp=expected_values[expected_values != 0][1:])
 print(my_chi)
 print('Threshold value ', chi2.isf(0.05,
       len(expected_values[expected_values != 0][1:]) - 1))
 
+print(len(expected_values[expected_values != 0][1:]) - 1, 'sdlkfnlsdknf')
+
 plt.hist(z2, bins=n_bins+0.05, label='Data Column 3')
 x = np.arange(0, len(expected_values[expected_values != 0][1:]), 1)
 fit1_label = ('Fit: Poisson distribution,\n$\mu$=%.02f, \n$\chi^2=%.02f$' %
               (data_2.x[0], my_chi[0]))
-plt.plot(x, expected_values[expected_values != 0][1:], 'ro', label=fit1_label)
+plt.plot(x+1, expected_values[expected_values != 0][1:], 'ro', label=fit1_label)
 plt.legend()
 plt.savefig('prob1_Column3.pdf')
 
@@ -167,6 +183,7 @@ plt.savefig('prob1_Column3.pdf')
 
 
 ###############################################################################
+print('Data 1 starts here')
 plt.figure()
 binwidth = 0.1
 n_bins = np.arange(min(z0), max(z0) + binwidth, binwidth)
@@ -185,7 +202,7 @@ my_chi = chisquare(observed_values,
                    f_exp=expected_values)
 print(my_chi)
 print('Threshold value ', chi2.isf(0.05, len(expected_values) - 3))
-
+print(len(expected_values) - 3)
 plt.figure()
 
 plt.hist(z0, bins=n_bins, normed=True, label='Data Column 2')
@@ -200,4 +217,19 @@ plt.legend()
 plt.savefig('prob1_Column1.pdf')
 
 # plt.show()
+###############################################################################
+print('Data 2 binom starts here')
+binwidth = 0.1
+n_bins = np.arange(min(z2), max(z2) + binwidth, binwidth)
+observed_values, bins, _ = plt.hist(z2, bins=n_bins, label='Data Column 3')
+asdasd = np.arange(0, 22.1, 0.1)
+expected_values = binom.pmf(asdasd, 5000, data_3.x[0]) * len(z2)
+plt.close()
+print(observed_values[observed_values != 0])
+print(expected_values[expected_values != 0][:-1])
 
+my_chi = chisquare(observed_values[observed_values != 0],
+                   f_exp=expected_values[expected_values != 0][1:])
+print(my_chi)
+print('Threshold value ', chi2.isf(0.05,
+      len(expected_values[expected_values != 0][1:]) - 1))
