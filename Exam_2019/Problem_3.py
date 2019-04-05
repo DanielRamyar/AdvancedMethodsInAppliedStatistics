@@ -38,11 +38,11 @@ estimate = integrate.quad(lambda p: p*beta.pdf(p, a, b) * binom.pmf(k, n, p) / n
 estimate2 = integrate.quad(lambda p: p**2 * beta.pdf(p, a, b) * binom.pmf(k, n, p) / normz3, 0, 1)[0]
 
 plt.plot(p, beta.pdf(p, a, b) / normz2, 'k', label='prior')
-plt.plot(p, binom.pmf(k, n, p) / normz1 , 'b', label='likelyhood')
+plt.plot(p, binom.pmf(k, n, p) / normz1 , 'b', label='likelihood')
 plt.plot(p, beta.pdf(p, a, b) * binom.pmf(k, n, p) / normz3, 'r', label='posterior')
 plt.legend()
 plt.show()
 
-
-print(estimate2 - estimate ** 2)
-print('Mean of posterior: ', estimate ** 2)
+print('likelihood at 0.35 ', binom.pmf(k, n, 0.35) / normz1)
+print('uncertainty ', np.sqrt(estimate2 - estimate ** 2))
+print('Mean of posterior: ', estimate )
