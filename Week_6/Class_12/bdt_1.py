@@ -4,7 +4,7 @@ import xgboost as xgb
 import pandas as pd
 from sklearn.metrics import accuracy_score
 
-
+plt.style.use('bmh')
 def convert_to_Dmatrix(data_set_1, data_set_2):
 
     labels_1 = np.zeros((data_set_1.shape[0], 1))
